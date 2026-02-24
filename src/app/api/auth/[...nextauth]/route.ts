@@ -1,5 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import { compare } from 'bcryptjs';
 import { prisma } from '@/lib/db';
 
@@ -12,6 +14,7 @@ declare module 'next-auth' {
             id: string;
             email: string;
             name?: string | null;
+            image?: string | null;
             role: string;
         };
     }
@@ -25,7 +28,12 @@ declare module 'next-auth' {
 }
 
 const handler = NextAuth({
+    adapter: PrismaAdapter(prisma) as any,
     providers: [
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+        }),
         CredentialsProvider({
             name: 'credentials',
             credentials: {
@@ -43,6 +51,10 @@ const handler = NextAuth({
 
                 if (!user) {
                     throw new Error('No existe una cuenta con ese email');
+                }
+
+                if (!user.passwordHash) {
+                    throw new Error('Esta cuenta usa inicio de sesión con Google');
                 }
 
                 const isValid = await compare(credentials.password as string, user.passwordHash);
@@ -63,10 +75,20 @@ const handler = NextAuth({
         strategy: 'jwt',
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, account }) {
             if (user) {
                 token.id = user.id as string;
-                token.role = (user as any).role as string;
+                token.role = (user as any).role as string || 'USER';
+            }
+            // For OAuth users, fetch role from DB if not set
+            if (account?.provider === 'google' && !token.role) {
+                const dbUser = await prisma.user.findUnique({
+                    where: { email: token.email as string },
+                });
+                if (dbUser) {
+                    token.id = dbUser.id;
+                    token.role = dbUser.role;
+                }
             }
             return token;
         },
