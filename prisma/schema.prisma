@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Authentication ─────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(USER)
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bookings      Booking[]
+  reviews       Review[]
+}
+
+// ─── Hotels & Rooms ─────────────────────────────────────────
+
+model Hotel {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  tagline     String
+  description String   @db.Text
+  location    String
+  country     String
+  lat         Float
+  lng         Float
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  stars       Int      @default(5)
+  image       String
+  gallery     String[]
+  amenities   String[]
+  highlights  String[]
+  priceFrom   Int
+
+  rooms       Room[]
+  seasons     Season[]
+  reviews     Review[]
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  hotelId     String
+  name        String
+  slug        String
+  type        String   // standard, superior, deluxe, suite, presidential
+  description String   @db.Text
+  capacity    Int
+  size        Int
+  bedType     String
+  basePrice   Int
+  image       String
+  amenities   String[]
+  features    String[]
+
+  hotel       Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+
+  @@unique([hotelId, slug])
+}
+
+model Season {
+  id          String   @id @default(cuid())
+  hotelId     String
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  multiplier  Float
+
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+// ─── Bookings ───────────────────────────────────────────────
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id               String        @id @default(cuid())
+  userId           String
+  roomId           String
+  checkIn          DateTime
+  checkOut         DateTime
+  adults           Int
+  children         Int           @default(0)
+  extras           String[]
+  totalPrice       Int           // in cents
+  status           BookingStatus @default(PENDING)
+  stripeSessionId  String?       @unique
+  guestName        String?
+  guestEmail       String?
+  notes            String?       @db.Text
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id])
+  room             Room          @relation(fields: [roomId], references: [id])
+}
+
+// ─── Reviews ────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  hotelId   String
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+// ─── Blog ───────────────────────────────────────────────────
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  excerpt   String   @db.Text
+  content   String   @db.Text
+  image     String
+  author    String
+  tags      String[]
+  readTime  Int
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── FAQ ────────────────────────────────────────────────────
+
+model FAQ {
+  id       String @id @default(cuid())
+  question String
+  answer   String @db.Text
+  category String
+  order    Int    @default(0)
+}
+
+// ─── Experiences ────────────────────────────────────────────
+
+model Experience {
+  id          String @id @default(cuid())
+  title       String
+  slug        String @unique
+  category    String
+  description String @db.Text
+  image       String
+  duration    String
+  price       Int
+}
