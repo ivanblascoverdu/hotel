@@ -140,6 +140,7 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error('Error creating booking:', error);
-        return NextResponse.json({ error: 'Error al crear la reserva' }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'Error al crear la reserva';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
