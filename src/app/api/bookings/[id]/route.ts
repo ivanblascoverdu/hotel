@@ -27,6 +27,15 @@ export async function GET(
             return NextResponse.json({ error: 'Reserva no encontrada' }, { status: 404 });
         }
 
+        // Ownership check: user can only view their own bookings (unless admin)
+        const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!currentUser) {
+            return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 401 });
+        }
+        if (currentUser.role !== 'ADMIN' && booking.userId !== currentUser.id) {
+            return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+        }
+
         return NextResponse.json(booking);
     } catch (error) {
         console.error('Error fetching booking:', error);

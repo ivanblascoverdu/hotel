@@ -1,11 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { hotels } from '@/data/hotels';
 import { Check, ArrowRight, ArrowLeft, Calendar, Users, CreditCard, Coffee, Car, Waves, Loader2 } from 'lucide-react';
+
+interface Room {
+    id: string;
+    name: string;
+    slug: string;
+    type: string;
+    description: string;
+    capacity: number;
+    size: number;
+    bedType: string;
+    basePrice: number;
+    image: string;
+    amenities: string[];
+    features: string[];
+}
+
+interface Hotel {
+    id: string;
+    name: string;
+    slug: string;
+    location: string;
+    rooms: Room[];
+}
 
 const extras = [
     { id: 'breakfast', name: 'Desayuno Buffet', price: 35, icon: <Coffee size={18} />, desc: 'Desayuno gourmet con productos locales' },
@@ -34,6 +56,27 @@ export default function BookingPage() {
     const [season, setSeason] = useState('media');
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [paymentError, setPaymentError] = useState('');
+
+    // Fetch hotels from the database API
+    const [hotels, setHotels] = useState<Hotel[]>([]);
+    const [hotelsLoading, setHotelsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchHotels() {
+            try {
+                const res = await fetch('/api/hotels');
+                if (res.ok) {
+                    const data = await res.json();
+                    setHotels(data);
+                }
+            } catch (error) {
+                console.error('Error fetching hotels:', error);
+            } finally {
+                setHotelsLoading(false);
+            }
+        }
+        fetchHotels();
+    }, []);
 
     const handlePayment = async () => {
         if (!session?.user) {
@@ -97,6 +140,10 @@ export default function BookingPage() {
         setSelectedExtras(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]);
     };
 
+    // Date validation
+    const today = new Date().toISOString().split('T')[0];
+    const isDateValid = checkIn && checkOut && checkIn >= today && checkOut > checkIn;
+
     const steps = [
         { num: 1, label: 'Fechas y Huéspedes' },
         { num: 2, label: 'Habitación' },
@@ -142,63 +189,78 @@ export default function BookingPage() {
                                     Fechas y Huéspedes
                                 </h2>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)', marginBottom: 'var(--space-lg)' }}>
-                                    <div className="input-group">
-                                        <label>Hotel</label>
-                                        <select className="select" value={selectedHotel} onChange={e => { setSelectedHotel(e.target.value); setSelectedRoom(''); }}>
-                                            <option value="">Seleccionar hotel</option>
-                                            {hotels.map(h => <option key={h.id} value={h.id}>{h.name} — {h.location}</option>)}
-                                        </select>
+                                {hotelsLoading ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-3xl)', gap: 'var(--space-md)' }}>
+                                        <Loader2 size={24} className="animate-spin" style={{ color: 'var(--color-accent)' }} />
+                                        <span>Cargando hoteles...</span>
                                     </div>
-                                    <div className="input-group">
-                                        <label>Temporada</label>
-                                        <select className="select" value={season} onChange={e => setSeason(e.target.value)}>
-                                            <option value="baja">Baja (Nov-Mar) -20%</option>
-                                            <option value="media">Media (Abr-Jun, Oct)</option>
-                                            <option value="alta">Alta (Jul-Sep) +30%</option>
-                                            <option value="especial">Especial (Festivos) +60%</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)', marginBottom: 'var(--space-lg)' }}>
-                                    <div className="input-group">
-                                        <label>Fecha de Entrada</label>
-                                        <input type="date" className="input" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>Fecha de Salida</label>
-                                        <input type="date" className="input" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
-                                    <div className="input-group">
-                                        <label>Adultos</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-                                            <button className="btn btn-secondary btn-sm" onClick={() => setAdults(Math.max(1, adults - 1))}>−</button>
-                                            <span style={{ fontWeight: 700, fontSize: '1.2rem', minWidth: 30, textAlign: 'center' }}>{adults}</span>
-                                            <button className="btn btn-secondary btn-sm" onClick={() => setAdults(Math.min(6, adults + 1))}>+</button>
+                                ) : (
+                                    <>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)', marginBottom: 'var(--space-lg)' }}>
+                                            <div className="input-group">
+                                                <label>Hotel</label>
+                                                <select className="select" value={selectedHotel} onChange={e => { setSelectedHotel(e.target.value); setSelectedRoom(''); }}>
+                                                    <option value="">Seleccionar hotel</option>
+                                                    {hotels.map(h => <option key={h.id} value={h.id}>{h.name} — {h.location}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Temporada</label>
+                                                <select className="select" value={season} onChange={e => setSeason(e.target.value)}>
+                                                    <option value="baja">Baja (Nov-Mar) -20%</option>
+                                                    <option value="media">Media (Abr-Jun, Oct)</option>
+                                                    <option value="alta">Alta (Jul-Sep) +30%</option>
+                                                    <option value="especial">Especial (Festivos) +60%</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="input-group">
-                                        <label>Niños</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-                                            <button className="btn btn-secondary btn-sm" onClick={() => setChildren(Math.max(0, children - 1))}>−</button>
-                                            <span style={{ fontWeight: 700, fontSize: '1.2rem', minWidth: 30, textAlign: 'center' }}>{children}</span>
-                                            <button className="btn btn-secondary btn-sm" onClick={() => setChildren(Math.min(4, children + 1))}>+</button>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <button
-                                    className="btn btn-primary btn-lg"
-                                    style={{ width: '100%' }}
-                                    onClick={() => setStep(2)}
-                                    disabled={!selectedHotel || !checkIn || !checkOut}
-                                >
-                                    Siguiente: Elegir Habitación <ArrowRight size={16} />
-                                </button>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)', marginBottom: 'var(--space-lg)' }}>
+                                            <div className="input-group">
+                                                <label>Fecha de Entrada</label>
+                                                <input type="date" className="input" value={checkIn} min={today} onChange={e => setCheckIn(e.target.value)} />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Fecha de Salida</label>
+                                                <input type="date" className="input" value={checkOut} min={checkIn || today} onChange={e => setCheckOut(e.target.value)} />
+                                            </div>
+                                        </div>
+
+                                        {checkIn && checkOut && !isDateValid && (
+                                            <p style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: 'var(--space-md)' }}>
+                                                La fecha de salida debe ser posterior a la fecha de entrada, y las fechas no pueden ser pasadas.
+                                            </p>
+                                        )}
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
+                                            <div className="input-group">
+                                                <label>Adultos</label>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+                                                    <button className="btn btn-secondary btn-sm" onClick={() => setAdults(Math.max(1, adults - 1))}>−</button>
+                                                    <span style={{ fontWeight: 700, fontSize: '1.2rem', minWidth: 30, textAlign: 'center' }}>{adults}</span>
+                                                    <button className="btn btn-secondary btn-sm" onClick={() => setAdults(Math.min(6, adults + 1))}>+</button>
+                                                </div>
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Niños</label>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+                                                    <button className="btn btn-secondary btn-sm" onClick={() => setChildren(Math.max(0, children - 1))}>−</button>
+                                                    <span style={{ fontWeight: 700, fontSize: '1.2rem', minWidth: 30, textAlign: 'center' }}>{children}</span>
+                                                    <button className="btn btn-secondary btn-sm" onClick={() => setChildren(Math.min(4, children + 1))}>+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            className="btn btn-primary btn-lg"
+                                            style={{ width: '100%' }}
+                                            onClick={() => setStep(2)}
+                                            disabled={!selectedHotel || !isDateValid}
+                                        >
+                                            Siguiente: Elegir Habitación <ArrowRight size={16} />
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         )}
 

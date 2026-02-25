@@ -3,24 +3,24 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface BookingEmailData {
-    guestName: string;
-    guestEmail: string;
-    hotelName: string;
-    roomName: string;
-    checkIn: string;
-    checkOut: string;
-    totalPrice: number;
-    bookingId: string;
-    extras: string[];
+  guestName: string;
+  guestEmail: string;
+  hotelName: string;
+  roomName: string;
+  checkIn: string;
+  checkOut: string;
+  totalPrice: number;
+  bookingId: string;
+  extras: string[];
 }
 
 export async function sendBookingConfirmation(data: BookingEmailData) {
-    try {
-        await resend.emails.send({
-            from: 'Lumière Hotels <reservas@lumierehotels.com>',
-            to: data.guestEmail,
-            subject: `Confirmación de reserva — ${data.hotelName}`,
-            html: `
+  try {
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'Lumière Hotels <onboarding@resend.dev>',
+      to: data.guestEmail,
+      subject: `Confirmación de reserva — ${data.hotelName}`,
+      html: `
         <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #0A1628; color: #F5F0EB; padding: 40px;">
           <div style="text-align: center; border-bottom: 1px solid #C9A96E; padding-bottom: 24px; margin-bottom: 24px;">
             <h1 style="font-size: 28px; color: #C9A96E; margin: 0;">LUMIÈRE</h1>
@@ -70,20 +70,20 @@ export async function sendBookingConfirmation(data: BookingEmailData) {
           </p>
         </div>
       `,
-        });
-        console.log('✅ Booking confirmation email sent to', data.guestEmail);
-    } catch (error) {
-        console.error('❌ Error sending email:', error);
-    }
+    });
+    console.log('✅ Booking confirmation email sent to', data.guestEmail);
+  } catch (error) {
+    console.error('❌ Error sending email:', error);
+  }
 }
 
 export async function sendAdminNotification(data: BookingEmailData) {
-    try {
-        await resend.emails.send({
-            from: 'Lumière System <sistema@lumierehotels.com>',
-            to: process.env.ADMIN_EMAIL || 'admin@lumierehotels.com',
-            subject: `Nueva reserva — ${data.hotelName} — ${data.guestName}`,
-            html: `
+  try {
+    await resend.emails.send({
+      from: 'Lumière System <sistema@lumierehotels.com>',
+      to: process.env.ADMIN_EMAIL || 'admin@lumierehotels.com',
+      subject: `Nueva reserva — ${data.hotelName} — ${data.guestName}`,
+      html: `
         <div style="font-family: sans-serif; padding: 20px;">
           <h2>Nueva Reserva Recibida</h2>
           <p><strong>Huésped:</strong> ${data.guestName} (${data.guestEmail})</p>
@@ -94,19 +94,19 @@ export async function sendAdminNotification(data: BookingEmailData) {
           <p><strong>ID:</strong> ${data.bookingId}</p>
         </div>
       `,
-        });
-    } catch (error) {
-        console.error('❌ Error sending admin notification:', error);
-    }
+    });
+  } catch (error) {
+    console.error('❌ Error sending admin notification:', error);
+  }
 }
 
 export async function sendCancellationEmail(data: BookingEmailData) {
-    try {
-        await resend.emails.send({
-            from: 'Lumière Hotels <reservas@lumierehotels.com>',
-            to: data.guestEmail,
-            subject: `Reserva cancelada — ${data.hotelName}`,
-            html: `
+  try {
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'Lumière Hotels <onboarding@resend.dev>',
+      to: data.guestEmail,
+      subject: `Reserva cancelada — ${data.hotelName}`,
+      html: `
         <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #0A1628; color: #F5F0EB; padding: 40px;">
           <div style="text-align: center; border-bottom: 1px solid #C9A96E; padding-bottom: 24px; margin-bottom: 24px;">
             <h1 style="font-size: 28px; color: #C9A96E; margin: 0;">LUMIÈRE</h1>
@@ -116,8 +116,8 @@ export async function sendCancellationEmail(data: BookingEmailData) {
           <p style="color: #94A3B8;">Si fue un error, puedes realizar una nueva reserva en nuestra web.</p>
         </div>
       `,
-        });
-    } catch (error) {
-        console.error('❌ Error sending cancellation email:', error);
-    }
+    });
+  } catch (error) {
+    console.error('❌ Error sending cancellation email:', error);
+  }
 }

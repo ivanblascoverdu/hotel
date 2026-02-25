@@ -49,6 +49,11 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Faltan campos' }, { status: 400 });
         }
 
+        const validStatuses = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'];
+        if (!validStatuses.includes(status)) {
+            return NextResponse.json({ error: 'Estado no válido' }, { status: 400 });
+        }
+
         const updated = await prisma.booking.update({
             where: { id: bookingId },
             data: { status },
