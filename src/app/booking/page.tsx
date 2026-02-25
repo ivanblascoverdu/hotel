@@ -266,7 +266,7 @@ export default function BookingPage() {
 
                         {/* Step 2: Room Selection */}
                         {step === 2 && hotel && (
-                            <div className="reveal">
+                            <div className="wizard-step-enter">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
                                     <button className="btn btn-secondary btn-sm" onClick={() => setStep(1)}>
                                         <ArrowLeft size={14} /> Atrás
@@ -337,7 +337,7 @@ export default function BookingPage() {
 
                         {/* Step 3: Extras */}
                         {step === 3 && (
-                            <div className="reveal">
+                            <div className="wizard-step-enter">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
                                     <button className="btn btn-secondary btn-sm" onClick={() => setStep(2)}>
                                         <ArrowLeft size={14} /> Atrás
@@ -391,7 +391,7 @@ export default function BookingPage() {
 
                         {/* Step 4: Confirmation */}
                         {step === 4 && (
-                            <div className="reveal">
+                            <div className="wizard-step-enter">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
                                     <button className="btn btn-secondary btn-sm" onClick={() => setStep(3)}>
                                         <ArrowLeft size={14} /> Atrás
