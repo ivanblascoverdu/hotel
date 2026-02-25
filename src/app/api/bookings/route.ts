@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
 
 // GET /api/bookings — List user's bookings
 export async function GET(request: Request) {
     try {
-        const session = await getServerSession();
+        const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
 // POST /api/bookings — Create booking + Stripe Checkout
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession();
+        const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
@@ -117,7 +118,6 @@ export async function POST(request: Request) {
                         product_data: {
                             name: `${room.name} — ${room.hotel.name}`,
                             description: `${nights} noches · ${checkIn} → ${checkOut}`,
-                            images: [room.image],
                         },
                         unit_amount: totalPrice,
                     },

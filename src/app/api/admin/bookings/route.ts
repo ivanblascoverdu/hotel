@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 // GET /api/admin/bookings — All bookings (admin only)
 export async function GET() {
     try {
-        const session = await getServerSession();
+        const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
@@ -33,7 +34,7 @@ export async function GET() {
 // PATCH /api/admin/bookings — Update booking status (admin only)
 export async function PATCH(request: Request) {
     try {
-        const session = await getServerSession();
+        const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
