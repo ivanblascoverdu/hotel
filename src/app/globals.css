@@ -611,6 +611,218 @@ ol {
   transform: translateY(-1px);
 }
 
+/* ---------- Nav User Auth ---------- */
+.nav-user-wrapper {
+  position: relative;
+}
+
+.nav-user-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  overflow: hidden;
+  padding: 0;
+}
+
+.nav-user-btn:hover {
+  border-color: var(--color-accent);
+  transform: scale(1.05);
+}
+
+.navbar.scrolled .nav-user-btn {
+  border-color: var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.nav-user-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+}
+
+.nav-user-initial {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+.nav-user-skeleton {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.navbar.scrolled .nav-user-skeleton {
+  background: var(--color-bg-alt);
+}
+
+.nav-user-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 240px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  z-index: 1100;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-user-dropdown-header {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-user-dropdown-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.nav-user-dropdown-email {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.nav-user-dropdown-divider {
+  height: 1px;
+  background: var(--color-border-light);
+}
+
+.nav-user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+.nav-user-dropdown-item:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-accent);
+}
+
+.nav-user-logout:hover {
+  color: var(--color-error);
+}
+
+.nav-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.nav-login-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.navbar.scrolled .nav-login-btn {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.navbar.scrolled .nav-login-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Mobile auth styles */
+.mobile-menu-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  color: var(--color-accent) !important;
+}
+
+.mobile-menu-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  padding: 0;
+}
+
+.mobile-menu-logout:hover {
+  color: var(--color-error);
+}
+
+@media (max-width: 968px) {
+  .nav-login-btn span {
+    display: none;
+  }
+
+  .nav-login-btn {
+    padding: 8px;
+    border: none;
+  }
+}
+
 .theme-toggle {
   width: 40px;
   height: 40px;
